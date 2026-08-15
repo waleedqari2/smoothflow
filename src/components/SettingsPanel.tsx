@@ -44,7 +44,8 @@ export function SettingsPanel({
     },
   ]
 
-  const mult = Math.round(settings.targetFps / info.fps)
+  // Mirrors the pipeline's 8x multiplier cap.
+  const mult = Math.min(8, Math.round(settings.targetFps / info.fps))
   const impossible = mult < 2 && !settings.enhance
   const fpsOnly = mult >= 2
   // Mirrors the pipeline's sizing: cap the long edge at 1920, then double.

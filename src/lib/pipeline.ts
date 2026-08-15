@@ -51,7 +51,9 @@ export function runPipeline(
   const promise = (async (): Promise<ProcessResult> => {
     const t0 = performance.now()
 
-    let multiplier = Math.round(settings.targetFps / info.fps)
+    // Cap at 8x: beyond that the mids barely differ and a misdetected source
+    // fps (e.g. a 1 fps screen recording) would explode the frame count.
+    let multiplier = Math.min(8, Math.round(settings.targetFps / info.fps))
     if (multiplier < 2 && !settings.enhance) {
       throw new Error(
         `This video is already ${info.fps} fps — pick a higher target, or turn on AI Upscale to enhance clarity instead.`,
