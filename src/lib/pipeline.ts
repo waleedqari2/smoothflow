@@ -165,6 +165,10 @@ export function runPipeline(
       video: {
         forceTranscode: true,
         quality: QUALITY_HIGH,
+        // Bake rotation into the pixels BEFORE our process hook runs — we
+        // read raw RGBA off a canvas, so metadata-based rotation would leave
+        // portrait phone footage squished inside a landscape frame.
+        allowRotationMetadata: false,
         processedWidth: outW,
         processedHeight: outH,
         process: async (sample) => {
@@ -181,7 +185,9 @@ export function runPipeline(
 
           if (prevRgba && midTs.length > 0) {
             const gap = currTs - prevTs
-            if (gap > 0) {
+            // Interpolate only across sane gaps: a jump > 0.5s is a recording
+            // pause or scene cut — morphing across it produces garbage frames.
+            if (gap > 0 && gap < 0.5) {
               const mids = await engine.mids(prevRgba, currRgba, midTs)
               for (let k = 0; k < mids.length; k++) {
                 emitted.push(

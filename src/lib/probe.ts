@@ -8,9 +8,12 @@ export async function probeFile(file: File): Promise<VideoInfo> {
     const video = await input.getPrimaryVideoTrack()
     if (!video) throw new Error('No video track found in this file.')
 
+    // Display dimensions: after pixel-aspect-ratio adjustment AND rotation —
+    // phone videos are stored landscape with a 90° rotation flag, and using
+    // coded dimensions here would squish portrait footage into a landscape box.
     const [width, height, duration, audio, stats] = await Promise.all([
-      video.getSquarePixelWidth(),
-      video.getSquarePixelHeight(),
+      video.getDisplayWidth(),
+      video.getDisplayHeight(),
       input.computeDuration(),
       input.getPrimaryAudioTrack(),
       video.computePacketStats(200),

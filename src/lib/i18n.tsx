@@ -40,10 +40,12 @@ const en = {
   tiktokWarn:
     'Heads-up: TikTok caps playback at 60 fps and re-encodes anything higher. 120/240 shines for slow-motion and editing workflows.',
   mode: 'Mode',
-  smoothTitle: '✨ Smooth motion',
-  smoothDesc: 'Same length & speed, {mult}× more frames. Audio kept.',
+  smoothTitle: '✨ Smooth motion — recommended',
+  smoothDesc:
+    'Same length & speed, {mult}× more frames. Audio kept. The video does NOT slow down.',
   slowmoTitle: '🐢 Slow motion',
-  slowmoDesc: '{mult}× slower, silky smooth. Audio removed.',
+  slowmoDesc:
+    'Deliberately plays {mult}× slower, silky smooth. Audio removed. Only pick this if you want slow-mo!',
   clarity: 'Clarity',
   upscaleTitle: '🔍 AI Upscale ×2',
   upscaleDesc:
@@ -116,10 +118,12 @@ const ar: Dict = {
   tiktokWarn:
     'تنبيه: تيك توك يعرض 60 إطارًا كحد أقصى ويعيد ترميز أي شيء أعلى. قوة 120/240 تظهر في السلو موشن والمونتاج.',
   mode: 'الوضع',
-  smoothTitle: '✨ حركة ناعمة',
-  smoothDesc: 'نفس المدة والسرعة مع {mult}× إطارات أكثر. الصوت محفوظ.',
+  smoothTitle: '✨ حركة ناعمة — الموصى به',
+  smoothDesc:
+    'نفس المدة والسرعة مع {mult}× إطارات أكثر. الصوت محفوظ. الفيديو لا يُبطَّأ إطلاقًا.',
   slowmoTitle: '🐢 سلو موشن',
-  slowmoDesc: 'أبطأ {mult}× بنعومة حريرية. يُحذف الصوت.',
+  slowmoDesc:
+    'يُبطئ الفيديو عمدًا {mult}× بنعومة حريرية ويحذف الصوت. اختره فقط إذا كنت تريد سلو موشن!',
   clarity: 'الوضوح',
   upscaleTitle: '🔍 ترقية بالذكاء الاصطناعي ×2',
   upscaleDesc:
@@ -189,10 +193,12 @@ const ur: Dict = {
   tiktokWarn:
     'خیال رہے: TikTok زیادہ سے زیادہ 60 fps چلاتا ہے اور اس سے اوپر کو ری اینکوڈ کر دیتا ہے۔ 120/240 کا کمال سلو موشن اور ایڈیٹنگ میں ہے۔',
   mode: 'موڈ',
-  smoothTitle: '✨ ہموار حرکت',
-  smoothDesc: 'وہی دورانیہ اور رفتار، {mult}× زیادہ فریم۔ آواز برقرار۔',
+  smoothTitle: '✨ ہموار حرکت — تجویز کردہ',
+  smoothDesc:
+    'وہی دورانیہ اور رفتار، {mult}× زیادہ فریم۔ آواز برقرار۔ ویڈیو بالکل سست نہیں ہوتی۔',
   slowmoTitle: '🐢 سلو موشن',
-  slowmoDesc: '{mult}× سست، ریشم جیسی ہموار۔ آواز حذف ہو جاتی ہے۔',
+  slowmoDesc:
+    'جان بوجھ کر {mult}× سست چلتی ہے، ریشم جیسی ہموار۔ آواز حذف۔ صرف تب چنیں جب سلو موشن چاہیے!',
   clarity: 'وضاحت',
   upscaleTitle: '🔍 AI اپ اسکیل ×2',
   upscaleDesc:
