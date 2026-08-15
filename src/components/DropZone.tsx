@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from 'react'
+import { useI18n } from '../lib/i18n'
 
 export function DropZone({
   onFile,
@@ -9,6 +10,7 @@ export function DropZone({
   busy: boolean
   error: string | null
 }) {
+  const { t } = useI18n()
   const inputRef = useRef<HTMLInputElement>(null)
   const [dragging, setDragging] = useState(false)
 
@@ -42,11 +44,12 @@ export function DropZone({
       >
         <div className="mb-4 text-5xl">{busy ? '⏳' : '🎬'}</div>
         <p className="mb-1 text-lg font-semibold">
-          {busy ? 'Reading video…' : 'Drop your video here'}
+          {busy ? t('dropBusy') : t('dropTitle')}
         </p>
         <p className="text-sm text-gray-400">
-          or <span className="grad-text font-semibold">browse files</span> · MP4,
-          MOV, WebM · processed locally, never uploaded
+          {t('dropOr')}{' '}
+          <span className="grad-text font-semibold">{t('dropBrowse')}</span> ·{' '}
+          {t('dropMeta')}
         </p>
         <input
           ref={inputRef}

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useI18n } from '../lib/i18n'
 import type { ProcessResult, VideoInfo } from '../lib/types'
 
 const fmtSize = (b: number) =>
@@ -15,6 +16,7 @@ export function ResultView({
   result: ProcessResult
   onRestart: () => void
 }) {
+  const { t } = useI18n()
   const downloadName = info.file.name.replace(
     /(\.\w+)?$/,
     `_${result.outFps}fps.mp4`,
@@ -35,30 +37,34 @@ export function ResultView({
       await navigator.share({ files: [shareFile] })
     } catch (err) {
       if (err instanceof Error && err.name !== 'AbortError') {
-        setShareError('Sharing failed — download the file instead.')
+        setShareError(t('shareFail'))
       }
     }
   }
+
   return (
     <div className="mx-auto max-w-3xl space-y-5">
       <div className="glass p-6 text-center">
         <div className="mb-2 text-4xl">✅</div>
         <h2 className="text-xl font-bold">
-          Boosted to <span className="grad-text">{result.outFps} fps</span>
+          <span className="grad-text">{t('boostedTo', { fps: result.outFps })}</span>
         </h2>
         <p className="mt-1 text-sm text-gray-400">
           {result.multiplier > 1 && (
             <>
-              {result.multiplier}× frames ·{' '}
-              {result.engine === 'ai' ? 'AI interpolation' : 'basic blending'} ·{' '}
+              {t('framesX', { n: result.multiplier })} ·{' '}
+              {result.engine === 'ai' ? t('aiInterp') : t('basicBlend')} ·{' '}
             </>
           )}
           {result.enhanced && (
             <span className="text-fuchsia-300">
-              upscaled to {result.outWidth}×{result.outHeight} ·{' '}
+              {t('upscaledTo', {
+                res: `${result.outWidth}×${result.outHeight}`,
+              })}{' '}
+              ·{' '}
             </span>
           )}
-          finished in {Math.round(result.seconds)}s ·{' '}
+          {t('finishedIn', { s: Math.round(result.seconds) })} ·{' '}
           {fmtSize(result.blob.size)}
         </p>
       </div>
@@ -66,7 +72,7 @@ export function ResultView({
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="glass overflow-hidden">
           <p className="border-b border-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-gray-400">
-            Before · {info.fps} fps
+            {t('before')} · {info.fps} fps
           </p>
           <video
             src={URL.createObjectURL(info.file)}
@@ -79,7 +85,9 @@ export function ResultView({
         </div>
         <div className="glass overflow-hidden ring-1 ring-violet-500/30">
           <p className="border-b border-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-wider">
-            <span className="grad-text">After · {result.outFps} fps</span>
+            <span className="grad-text">
+              {t('after')} · {result.outFps} fps
+            </span>
           </p>
           <video
             src={result.url}
@@ -98,14 +106,14 @@ export function ResultView({
           download={downloadName}
           className="grad-bg min-w-52 flex-1 rounded-xl py-4 text-center text-lg font-bold text-white shadow-lg shadow-violet-500/25 transition hover:opacity-90"
         >
-          ⬇ Download {result.outFps} fps video
+          {t('downloadBtn', { fps: result.outFps })}
         </a>
         {canShare && (
           <button
             onClick={share}
             className="flex-1 rounded-xl border border-white/15 px-6 py-4 text-lg font-bold text-gray-200 transition hover:bg-white/5"
           >
-            📤 Share
+            {t('shareBtn')}
           </button>
         )}
         <a
@@ -114,23 +122,19 @@ export function ResultView({
           rel="noreferrer"
           className="flex-1 rounded-xl border border-cyan-400/40 bg-cyan-500/10 px-6 py-4 text-center text-lg font-bold text-cyan-200 transition hover:bg-cyan-500/20"
         >
-          ↗ Open TikTok Studio
+          {t('studioBtn')}
         </a>
         <button
           onClick={onRestart}
           className="rounded-xl border border-white/15 px-6 text-sm font-semibold text-gray-300 transition hover:bg-white/5"
         >
-          New video
+          {t('newVideo')}
         </button>
       </div>
       {shareError && (
         <p className="text-center text-xs text-amber-300">{shareError}</p>
       )}
-      <p className="text-center text-xs text-gray-500">
-        Pro tip: upload through TikTok Studio for the best quality — download
-        the video, drag it in, and turn on "Allow high-quality uploads" before
-        posting.
-      </p>
+      <p className="text-center text-xs text-gray-500">{t('proTip')}</p>
     </div>
   )
 }

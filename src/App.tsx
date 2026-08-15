@@ -6,6 +6,7 @@ import { ProcessingView } from './components/ProcessingView'
 import { ResultView } from './components/ResultView'
 import { probeFile } from './lib/probe'
 import { runPipeline, type PipelineHandle } from './lib/pipeline'
+import { LANGS, useI18n } from './lib/i18n'
 import {
   detectCaps,
   type Caps,
@@ -24,14 +25,8 @@ const DEFAULT_SETTINGS: Settings = {
   enhance: false,
 }
 
-const STEPS: { key: Stage; label: string }[] = [
-  { key: 'drop', label: 'Upload' },
-  { key: 'settings', label: 'Settings' },
-  { key: 'processing', label: 'Process' },
-  { key: 'done', label: 'Download' },
-]
-
 export default function App() {
+  const { t, lang, setLang } = useI18n()
   const [caps, setCaps] = useState<Caps | null>(null)
   const [stage, setStage] = useState<Stage>('drop')
   const [info, setInfo] = useState<VideoInfo | null>(null)
@@ -50,6 +45,13 @@ export default function App() {
   useEffect(() => {
     void detectCaps().then(setCaps)
   }, [])
+
+  const STEPS: { key: Stage; label: string }[] = [
+    { key: 'drop', label: t('stepUpload') },
+    { key: 'settings', label: t('stepSettings') },
+    { key: 'processing', label: t('stepProcess') },
+    { key: 'done', label: t('stepDownload') },
+  ]
 
   const handleFile = async (file: File) => {
     setError(null)
@@ -117,7 +119,24 @@ export default function App() {
             Smooth<span className="grad-text">Flow</span>
           </span>
         </div>
-        {caps && <EngineBadge caps={caps} />}
+        <div className="flex items-center gap-3">
+          <div className="glass flex !rounded-full p-1 text-xs font-semibold">
+            {LANGS.map((l) => (
+              <button
+                key={l.code}
+                onClick={() => setLang(l.code)}
+                className={`rounded-full px-3 py-1 transition ${
+                  lang === l.code
+                    ? 'grad-bg text-white'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                {l.label}
+              </button>
+            ))}
+          </div>
+          {caps && <EngineBadge caps={caps} />}
+        </div>
       </header>
 
       <main className="mx-auto max-w-5xl">
@@ -125,18 +144,14 @@ export default function App() {
         {stage === 'drop' && (
           <section className="py-10 text-center">
             <h1 className="mx-auto mb-4 max-w-2xl text-4xl font-extrabold leading-tight sm:text-5xl">
-              Make your videos <span className="grad-text">buttery smooth</span>
+              {t('heroTitle1')}
+              <span className="grad-text">{t('heroTitle2')}</span>
             </h1>
-            <p className="mx-auto mb-6 max-w-xl text-gray-400">
-              AI frame interpolation to 60, 120 or 240 fps — running entirely in
-              your browser. No uploads, no accounts, free forever.
-            </p>
+            <p className="mx-auto mb-6 max-w-xl text-gray-400">{t('heroSub')}</p>
             <div className="mb-10 flex justify-center">
               <span className="glass inline-flex items-center gap-2 !rounded-full px-5 py-2 text-sm font-extrabold tracking-wide">
-                <span>👨‍💻</span>
-                <span>
-                  Coded By <span className="grad-text">WaLiD</span>
-                </span>
+                {t('codedBy')}{' '}
+                <span className="text-red-500">WaLiD</span>
               </span>
             </div>
           </section>
@@ -207,8 +222,7 @@ export default function App() {
       </main>
 
       <footer className="mx-auto mt-16 max-w-5xl border-t border-white/5 pt-6 text-center text-xs text-gray-500">
-        Videos are processed on your device and never leave it. · AI model:
-        RIFE-family via{' '}
+        {t('footerPrivacy')} · {t('aiModel')}:{' '}
         <a
           href="https://github.com/MONZikWasTaken/Framegen"
           className="underline hover:text-gray-300"
@@ -217,7 +231,7 @@ export default function App() {
         >
           framegen
         </a>{' '}
-        (non-commercial weights) · Media engine:{' '}
+        ({t('nonCommercial')}) · {t('mediaEngine')}:{' '}
         <a
           href="https://github.com/Vanilagy/mediabunny"
           className="underline hover:text-gray-300"
