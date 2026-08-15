@@ -1,0 +1,98 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #0a0a0f;
+  --surface: rgba(255, 255, 255, 0.04);
+  --border: rgba(255, 255, 255, 0.09);
+  --accent-a: #8b5cf6;
+  --accent-b: #22d3ee;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: #e5e7eb;
+  font-family: "Inter", system-ui, sans-serif;
+  min-height: 100%;
+}
+
+.glass {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(14px);
+  border-radius: 1rem;
+}
+
+.grad-text {
+  background: linear-gradient(90deg, var(--accent-a), var(--accent-b));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.grad-bg {
+  background: linear-gradient(90deg, var(--accent-a), var(--accent-b));
+}
+
+/* animated aurora backdrop */
+.aurora {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.aurora::before,
+.aurora::after {
+  content: "";
+  position: absolute;
+  width: 55vw;
+  height: 55vw;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.16;
+  animation: drift 22s ease-in-out infinite alternate;
+}
+.aurora::before {
+  background: var(--accent-a);
+  top: -20vw;
+  left: -10vw;
+}
+.aurora::after {
+  background: var(--accent-b);
+  bottom: -25vw;
+  right: -10vw;
+  animation-delay: -11s;
+}
+@keyframes drift {
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    transform: translate(8vw, 6vh) scale(1.15);
+  }
+}
+
+/* indeterminate shimmer on the progress bar */
+.progress-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.progress-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.35),
+    transparent
+  );
+  transform: translateX(-100%);
+  animation: shimmer 1.4s infinite;
+}
+@keyframes shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
