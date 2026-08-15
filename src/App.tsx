@@ -127,10 +127,18 @@ export default function App() {
             <h1 className="mx-auto mb-4 max-w-2xl text-4xl font-extrabold leading-tight sm:text-5xl">
               Make your videos <span className="grad-text">buttery smooth</span>
             </h1>
-            <p className="mx-auto mb-10 max-w-xl text-gray-400">
+            <p className="mx-auto mb-6 max-w-xl text-gray-400">
               AI frame interpolation to 60, 120 or 240 fps — running entirely in
               your browser. No uploads, no accounts, free forever.
             </p>
+            <div className="mb-10 flex justify-center">
+              <span className="glass inline-flex items-center gap-2 !rounded-full px-5 py-2 text-sm font-extrabold tracking-wide">
+                <span>👨‍💻</span>
+                <span>
+                  Coded By <span className="grad-text">WaLiD</span>
+                </span>
+              </span>
+            </div>
           </section>
         )}
 

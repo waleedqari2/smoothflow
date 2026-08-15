@@ -100,23 +100,22 @@ export function ResultView({
         >
           ⬇ Download {result.outFps} fps video
         </a>
-        {canShare ? (
+        {canShare && (
           <button
             onClick={share}
-            className="flex-1 rounded-xl border border-cyan-400/40 bg-cyan-500/10 px-6 py-4 text-lg font-bold text-cyan-200 transition hover:bg-cyan-500/20"
+            className="flex-1 rounded-xl border border-white/15 px-6 py-4 text-lg font-bold text-gray-200 transition hover:bg-white/5"
           >
-            📤 Share to TikTok
+            📤 Share
           </button>
-        ) : (
-          <a
-            href={TIKTOK_STUDIO}
-            target="_blank"
-            rel="noreferrer"
-            className="flex-1 rounded-xl border border-cyan-400/40 bg-cyan-500/10 px-6 py-4 text-center text-lg font-bold text-cyan-200 transition hover:bg-cyan-500/20"
-          >
-            ↗ Open TikTok Studio
-          </a>
         )}
+        <a
+          href={TIKTOK_STUDIO}
+          target="_blank"
+          rel="noreferrer"
+          className="flex-1 rounded-xl border border-cyan-400/40 bg-cyan-500/10 px-6 py-4 text-center text-lg font-bold text-cyan-200 transition hover:bg-cyan-500/20"
+        >
+          ↗ Open TikTok Studio
+        </a>
         <button
           onClick={onRestart}
           className="rounded-xl border border-white/15 px-6 text-sm font-semibold text-gray-300 transition hover:bg-white/5"
@@ -127,12 +126,11 @@ export function ResultView({
       {shareError && (
         <p className="text-center text-xs text-amber-300">{shareError}</p>
       )}
-      {!canShare && (
-        <p className="text-center text-xs text-gray-500">
-          Download the video first, then drag it into TikTok Studio — and turn
-          on "Allow high-quality uploads" before posting.
-        </p>
-      )}
+      <p className="text-center text-xs text-gray-500">
+        Pro tip: upload through TikTok Studio for the best quality — download
+        the video, drag it in, and turn on "Allow high-quality uploads" before
+        posting.
+      </p>
     </div>
   )
 }
