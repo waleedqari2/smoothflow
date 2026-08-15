@@ -33,3 +33,29 @@ declare module 'framegen' {
     opts: CreateRTOptions,
   ): Promise<RT>
 }
+
+declare module 'framegen/sr' {
+  export interface SR {
+    /**
+     * Run the SR pass srcTex (w×h) → dstTex (scale·w × scale·h, rgba8unorm
+     * STORAGE_BINDING). Returns false while per-size pipelines are still
+     * compiling — retry shortly.
+     */
+    process(
+      srcTex: GPUTexture,
+      dstTex: GPUTexture,
+      w: number,
+      h: number,
+    ): boolean
+    scale: number
+  }
+
+  export function createSR(
+    device: GPUDevice,
+    opts: {
+      weightsBin: ArrayBuffer
+      weightsManifest: Record<string, { offset: number; shape: number[] }>
+      channels?: number
+    },
+  ): Promise<SR>
+}

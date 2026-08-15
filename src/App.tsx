@@ -21,6 +21,7 @@ const DEFAULT_SETTINGS: Settings = {
   targetFps: 60,
   mode: 'smooth',
   limitTo1080p: true,
+  enhance: false,
 }
 
 const STEPS: { key: Stage; label: string }[] = [

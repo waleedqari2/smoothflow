@@ -1,4 +1,5 @@
 import { createRT, type RT } from 'framegen'
+import { fetchWeights, getGpuDevice } from './gpu'
 import type { Interpolator } from './types'
 
 /**
@@ -11,24 +12,9 @@ export async function createAiInterpolator(
   padW: number,
   padH: number,
 ): Promise<Interpolator> {
-  const adapter = await navigator.gpu?.requestAdapter()
-  if (!adapter) throw new Error('WebGPU is not available')
-  const device = await adapter.requestDevice({
-    requiredFeatures: adapter.features.has('shader-f16')
-      ? (['shader-f16'] as GPUFeatureName[])
-      : [],
-  })
-
-  const [weightsBin, weightsManifest] = await Promise.all([
-    fetch(`${import.meta.env.BASE_URL}weights/rt_v7s.bin`).then((r) => {
-      if (!r.ok) throw new Error('Failed to load model weights')
-      return r.arrayBuffer()
-    }),
-    fetch(`${import.meta.env.BASE_URL}weights/rt_v7s.json`).then((r) => {
-      if (!r.ok) throw new Error('Failed to load model manifest')
-      return r.json()
-    }),
-  ])
+  const device = await getGpuDevice()
+  const { bin: weightsBin, manifest: weightsManifest } =
+    await fetchWeights('rt_v7s')
 
   const rt: RT = await createRT(device, {
     w: padW,
@@ -118,12 +104,12 @@ export async function createAiInterpolator(
       return results
     },
     destroy() {
+      // Note: the shared GPU device is page-lifetime — never destroy it here.
       rt.destroy()
       texA.destroy()
       texB.destroy()
       for (const t of outTexPool) t.destroy()
       staging.destroy()
-      device.destroy()
     },
   }
 }

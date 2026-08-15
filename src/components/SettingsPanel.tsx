@@ -45,7 +45,12 @@ export function SettingsPanel({
   ]
 
   const mult = Math.round(settings.targetFps / info.fps)
-  const impossible = mult < 2
+  const impossible = mult < 2 && !settings.enhance
+  const fpsOnly = mult >= 2
+  // Mirrors the pipeline's sizing: cap the long edge at 1920, then double.
+  const down = Math.min(1, 1920 / Math.max(info.width, info.height))
+  const upW = Math.round(info.width * down) * 2
+  const upH = Math.round(info.height * down) * 2
 
   return (
     <div className="mx-auto max-w-2xl space-y-5">
@@ -138,8 +143,42 @@ export function SettingsPanel({
         </div>
       </div>
 
+      {/* clarity */}
+      <div className="glass p-5">
+        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
+          Clarity
+        </h3>
+        <button
+          onClick={() => onChange({ ...settings, enhance: !settings.enhance })}
+          className={`w-full rounded-xl border p-4 text-left transition ${
+            settings.enhance
+              ? 'border-fuchsia-500/60 bg-fuchsia-500/10 ring-1 ring-fuchsia-500/40'
+              : 'border-white/10 hover:border-white/25'
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            <p className="font-bold">🔍 AI Upscale ×2</p>
+            <span
+              className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
+                settings.enhance
+                  ? 'bg-fuchsia-500/20 text-fuchsia-300'
+                  : 'bg-white/10 text-gray-400'
+              }`}
+            >
+              {settings.enhance ? 'ON' : 'OFF'}
+            </span>
+          </div>
+          <p className="mt-1 text-xs leading-snug text-gray-400">
+            Neural super-resolution doubles the output resolution with sharper
+            details ({info.width}×{info.height} → {upW}×{upH}). Feeding TikTok
+            a sharper source survives its re-encode better. Roughly doubles
+            processing time.
+          </p>
+        </button>
+      </div>
+
       {/* extras */}
-      {Math.max(info.width, info.height) > 1920 && (
+      {Math.max(info.width, info.height) > 1920 && !settings.enhance && (
         <label className="glass flex cursor-pointer items-center gap-3 px-5 py-4 text-sm">
           <input
             type="checkbox"
@@ -170,7 +209,9 @@ export function SettingsPanel({
         disabled={impossible}
         className="grad-bg w-full rounded-xl py-4 text-lg font-bold text-white shadow-lg shadow-violet-500/25 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
       >
-        Boost to {settings.targetFps} fps →
+        {fpsOnly
+          ? `Boost to ${settings.targetFps} fps${settings.enhance ? ' + Upscale' : ''} →`
+          : 'Enhance clarity ×2 →'}
       </button>
     </div>
   )

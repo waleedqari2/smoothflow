@@ -24,8 +24,17 @@ export function ResultView({
           Boosted to <span className="grad-text">{result.outFps} fps</span>
         </h2>
         <p className="mt-1 text-sm text-gray-400">
-          {result.multiplier}× frames ·{' '}
-          {result.engine === 'ai' ? 'AI interpolation' : 'basic blending'} ·
+          {result.multiplier > 1 && (
+            <>
+              {result.multiplier}× frames ·{' '}
+              {result.engine === 'ai' ? 'AI interpolation' : 'basic blending'} ·{' '}
+            </>
+          )}
+          {result.enhanced && (
+            <span className="text-fuchsia-300">
+              upscaled to {result.outWidth}×{result.outHeight} ·{' '}
+            </span>
+          )}
           finished in {Math.round(result.seconds)}s ·{' '}
           {fmtSize(result.blob.size)}
         </p>

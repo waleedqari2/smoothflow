@@ -15,6 +15,8 @@ export interface Settings {
   mode: ProcessMode
   /** Downscale >1080p sources to 1080p for speed (TikTok native). */
   limitTo1080p: boolean
+  /** Neural 2x super-resolution pass on every output frame. */
+  enhance: boolean
 }
 
 export type EngineKind = 'ai' | 'blend'
@@ -45,6 +47,10 @@ export interface ProcessResult {
   multiplier: number
   engine: EngineKind
   seconds: number
+  outWidth: number
+  outHeight: number
+  /** True when the neural 2x upscale pass actually ran. */
+  enhanced: boolean
 }
 
 export interface Caps {

@@ -11,6 +11,7 @@ import {
 } from 'mediabunny'
 import { createAiInterpolator } from './interpolate'
 import { createBlendInterpolator } from './blend'
+import { createUpscaler, type Upscaler } from './upscale'
 import type {
   EngineKind,
   Interpolator,
@@ -50,26 +51,28 @@ export function runPipeline(
   const promise = (async (): Promise<ProcessResult> => {
     const t0 = performance.now()
 
-    const multiplier = Math.round(settings.targetFps / info.fps)
-    if (multiplier < 2) {
+    let multiplier = Math.round(settings.targetFps / info.fps)
+    if (multiplier < 2 && !settings.enhance) {
       throw new Error(
-        `This video is already ${info.fps} fps — pick a target of at least ${
-          Math.ceil((info.fps * 2) / 60) * 60
-        } fps to interpolate.`,
+        `This video is already ${info.fps} fps — pick a higher target, or turn on AI Upscale to enhance clarity instead.`,
       )
     }
+    // Enhance-only run: no interpolation, just the SR pass on every frame.
+    if (multiplier < 1) multiplier = 1
     const slowmo = settings.mode === 'slowmo'
     // In slow-mo the wall-clock fps stays at the source rate; in smooth mode
     // it becomes source*multiplier.
     const outFps = Math.round(slowmo ? info.fps : info.fps * multiplier)
 
     // Working resolution (optionally capped to 1080p on the long edge).
+    // The enhance pass doubles the output, so cap the working size then too —
+    // otherwise a 4K source would balloon to 8K.
     let w = info.width
     let h = info.height
-    if (settings.limitTo1080p && Math.max(w, h) > 1920) {
-      const scale = 1920 / Math.max(w, h)
-      w = Math.round(w * scale)
-      h = Math.round(h * scale)
+    if ((settings.limitTo1080p || settings.enhance) && Math.max(w, h) > 1920) {
+      const down = 1920 / Math.max(w, h)
+      w = Math.round(w * down)
+      h = Math.round(h * down)
     }
     // Encoders want even dimensions.
     w -= w % 2
@@ -90,14 +93,32 @@ export function runPipeline(
       engine = createBlendInterpolator()
     }
 
+    // --- optional neural 2x upscale pass ---
+    let upscaler: Upscaler | null = null
+    if (settings.enhance) {
+      try {
+        upscaler = await createUpscaler(padW, padH)
+      } catch (err) {
+        console.warn('Upscaler unavailable, continuing without enhance:', err)
+      }
+    }
+    const scale = upscaler?.scale ?? 1
+    const outW = w * scale
+    const outH = h * scale
+
     // --- canvases for pixel shuffling ---
     // padCanvas: frame drawn at top-left, padded to /16 for the model.
     const padCanvas = new OffscreenCanvas(padW, padH)
     const padCtx = padCanvas.getContext('2d', { willReadFrequently: true })!
+    // upCanvas: receives upscaled padded frames before cropping.
+    const upCanvas = new OffscreenCanvas(padW * scale, padH * scale)
+    const upCtx = upCanvas.getContext('2d')!
     // outCanvas: crops the padding back off for the encoder.
-    const outCanvas = new OffscreenCanvas(w, h)
+    const outCanvas = new OffscreenCanvas(outW, outH)
     const outCtx = outCanvas.getContext('2d')!
     const midImageData = new ImageData(padW, padH)
+    const upImageData =
+      scale > 1 ? new ImageData(padW * scale, padH * scale) : midImageData
 
     const input = new Input({
       source: new BlobSource(info.file),
@@ -119,14 +140,20 @@ export function runPipeline(
 
     const timeScale = slowmo ? multiplier : 1
 
-    const sampleFromRgba = (
+    const sampleFromRgba = async (
       rgba: Uint8Array,
       timestamp: number,
       duration: number,
-    ): VideoSample => {
-      midImageData.data.set(rgba)
-      padCtx.putImageData(midImageData, 0, 0)
-      outCtx.drawImage(padCanvas, 0, 0, w, h, 0, 0, w, h)
+    ): Promise<VideoSample> => {
+      if (upscaler) {
+        upImageData.data.set(await upscaler.run(rgba))
+        upCtx.putImageData(upImageData, 0, 0)
+        outCtx.drawImage(upCanvas, 0, 0, outW, outH, 0, 0, outW, outH)
+      } else {
+        midImageData.data.set(rgba)
+        padCtx.putImageData(midImageData, 0, 0)
+        outCtx.drawImage(padCanvas, 0, 0, w, h, 0, 0, w, h)
+      }
       return new VideoSample(outCanvas, { timestamp, duration })
     }
 
@@ -136,8 +163,8 @@ export function runPipeline(
       video: {
         forceTranscode: true,
         quality: QUALITY_HIGH,
-        processedWidth: w,
-        processedHeight: h,
+        processedWidth: outW,
+        processedHeight: outH,
         process: async (sample) => {
           // Extract padded RGBA pixels for the interpolator.
           padCtx.clearRect(0, 0, padW, padH)
@@ -150,13 +177,13 @@ export function runPipeline(
 
           const emitted: VideoSample[] = []
 
-          if (prevRgba) {
+          if (prevRgba && midTs.length > 0) {
             const gap = currTs - prevTs
             if (gap > 0) {
               const mids = await engine.mids(prevRgba, currRgba, midTs)
               for (let k = 0; k < mids.length; k++) {
                 emitted.push(
-                  sampleFromRgba(
+                  await sampleFromRgba(
                     mids[k],
                     prevTs + gap * midTs[k],
                     gap / multiplier,
@@ -165,7 +192,7 @@ export function runPipeline(
               }
             }
           }
-          emitted.push(sampleFromRgba(currRgba, currTs, 1 / outFps))
+          emitted.push(await sampleFromRgba(currRgba, currTs, 1 / outFps))
 
           prevRgba = currRgba
           prevTs = currTs
@@ -196,6 +223,7 @@ export function runPipeline(
       await conversion.execute()
     } finally {
       engine.destroy()
+      upscaler?.destroy()
     }
 
     if (cancelled) throw new Error('cancelled')
@@ -211,6 +239,9 @@ export function runPipeline(
       multiplier,
       engine: engine.kind,
       seconds: (performance.now() - t0) / 1000,
+      outWidth: outW,
+      outHeight: outH,
+      enhanced: !!upscaler,
     }
   })()
 
